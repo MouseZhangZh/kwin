@@ -13,12 +13,12 @@
 #include "nightcolordbusinterface.h"
 #include "nightcolorlogging.h"
 #include "nightcolorsettings.h"
+#include "session.h"
 #include "suncalc.h"
 
 #include <main.h>
 #include <platform.h>
 #include <workspace.h>
-#include <logind.h>
 
 #include <KGlobalAccel>
 #include <KLocalizedString>
@@ -111,15 +111,13 @@ void NightColorManager::init()
 
     connect(ColorManager::self(), &ColorManager::deviceAdded, this, &NightColorManager::hardReset);
 
-    connect(LogindIntegration::self(), &LogindIntegration::sessionActiveChanged, this,
-            [this](bool active) {
-                if (active) {
-                    hardReset();
-                } else {
-                    cancelAllTimers();
-                }
-            }
-    );
+    connect(kwinApp()->platform()->session(), &Session::activeChanged, this, [this](bool active) {
+        if (active) {
+            hardReset();
+        } else {
+            cancelAllTimers();
+        }
+    });
 
     connect(m_skewNotifier, &ClockSkewNotifier::clockSkewed, this, [this]() {
         // check if we're resuming from suspend - in this case do a hard reset

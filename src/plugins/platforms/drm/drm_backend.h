@@ -57,8 +57,8 @@ public:
     QPainterBackend *createQPainterBackend() override;
     OpenGLBackend* createOpenGLBackend() override;
     DmaBufTexture *createDmaBufTexture(const QSize &size) override;
-
-    void init() override;
+    Session *session() const override;
+    bool initialize() override;
     void prepareShutdown() override;
 
     bool present(DrmBuffer *buffer, DrmOutput *output);
@@ -94,7 +94,6 @@ private:
     void addOutput(DrmOutput* output);
     void removeOutput(DrmOutput* output);
     static void pageFlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data);
-    void openDrm();
     void activate(bool active);
     void reactivate();
     void deactivate();
@@ -109,7 +108,7 @@ private:
     void updateOutputsEnabled();
     QScopedPointer<Udev> m_udev;
     QScopedPointer<UdevMonitor> m_udevMonitor;
-
+    Session *m_session = nullptr;
     // active output pipelines (planes + crtc + encoder + connector)
     QVector<DrmOutput*> m_outputs;
     // active and enabled pipelines (above + wl_output)
