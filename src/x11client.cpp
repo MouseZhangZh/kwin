@@ -2892,7 +2892,6 @@ void X11Client::move(int x, int y, ForceGeometry_t force)
     if (oldFrameGeometry != frameGeometry()) {
         emit frameGeometryChanged(this, oldFrameGeometry);
     }
-    addRepaintDuringGeometryUpdates();
 }
 
 bool X11Client::belongToSameApplication(const X11Client *c1, const X11Client *c2, SameApplicationChecks checks)
@@ -4192,7 +4191,6 @@ void X11Client::setFrameGeometry(const QRect &rect, ForceGeometry_t force)
         emit frameGeometryChanged(this, oldFrameGeometry);
     }
     emit geometryShapeChanged(this, oldFrameGeometry);
-    addRepaintDuringGeometryUpdates();
 }
 
 void X11Client::plainResize(int w, int h, ForceGeometry_t force)
@@ -4255,7 +4253,6 @@ void X11Client::plainResize(int w, int h, ForceGeometry_t force)
         emit frameGeometryChanged(this, oldFrameGeometry);
     }
     emit geometryShapeChanged(this, oldFrameGeometry);
-    addRepaintDuringGeometryUpdates();
 }
 
 void X11Client::updateServerGeometry()
