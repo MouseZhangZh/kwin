@@ -127,6 +127,7 @@ bool Unmanaged::track(xcb_window_t w)
 void Unmanaged::release(ReleaseReason releaseReason)
 {
     addWorkspaceRepaint(visibleGeometry());
+    emit markedAsZombie();
     Deleted* del = nullptr;
     if (releaseReason != ReleaseReason::KWinShutsDown) {
         del = Deleted::create(this);
@@ -211,15 +212,6 @@ QWindow *Unmanaged::findInternalWindow() const
         }
     }
     return nullptr;
-}
-
-void Unmanaged::finishCompositing(ReleaseReason releaseReason)
-{
-    SurfaceItemX11 *item = qobject_cast<SurfaceItemX11 *>(surfaceItem());
-    if (item) {
-        item->destroyDamage();
-    }
-    Toplevel::finishCompositing(releaseReason);
 }
 
 void Unmanaged::damageNotifyEvent()
