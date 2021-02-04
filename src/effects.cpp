@@ -30,6 +30,7 @@
 #include "scripting/scriptedeffect.h"
 #include "screens.h"
 #include "screenlockerwatcher.h"
+#include "surfaceitem.h"
 #include "thumbnailitem.h"
 #include "virtualdesktops.h"
 #include "window_property_notify_x11_filter.h"
@@ -1940,7 +1941,7 @@ void EffectWindowImpl::setSceneWindow(Scene::Window* w)
 QRegion EffectWindowImpl::shape() const
 {
     if (isX11Client() && sceneWindow()) {
-        return sceneWindow()->bufferShape();
+        return sceneWindow()->surfaceItem()->shape();
     }
     return toplevel->rect();
 }

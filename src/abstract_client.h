@@ -917,6 +917,7 @@ Q_SIGNALS:
     void hasApplicationMenuChanged(bool);
     void applicationMenuActiveChanged(bool);
     void unresponsiveChanged(bool);
+    void decorationChanged();
 
 protected:
     AbstractClient();
@@ -1185,9 +1186,7 @@ protected:
         s_haveResizeEffect = false;
     }
 
-    void setDecoration(KDecoration2::Decoration *decoration) {
-        m_decoration.decoration = decoration;
-    }
+    void setDecoration(KDecoration2::Decoration *decoration);
     virtual void createDecoration(const QRect &oldGeometry);
     virtual void destroyDecoration();
     void startDecorationDoubleClickTimer();

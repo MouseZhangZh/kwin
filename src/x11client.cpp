@@ -25,6 +25,7 @@
 #include "netinfo.h"
 #include "screens.h"
 #include "shadow.h"
+#include "surfaceitem_x11.h"
 #ifdef KWIN_BUILD_TABBOX
 #include "tabbox.h"
 #endif
@@ -1381,6 +1382,11 @@ bool X11Client::setupCompositing()
 
 void X11Client::finishCompositing(ReleaseReason releaseReason)
 {
+    SurfaceItemX11 *item = qobject_cast<SurfaceItemX11 *>(surfaceItem());
+    if (item) {
+        item->destroyDamage();
+    }
+
     Toplevel::finishCompositing(releaseReason);
     updateVisibility();
     // for safety in case KWin is just resizing the window
@@ -2784,17 +2790,6 @@ void X11Client::showOnScreenEdge()
     xcb_delete_property(connection(), window(), atoms->kde_screen_edge_show);
 }
 
-void X11Client::addDamage(const QRegion &damage)
-{
-    if (!ready_for_painting) { // avoid "setReadyForPainting()" function calling overhead
-        if (m_syncRequest.counter == XCB_NONE) {  // cannot detect complete redraw, consider done now
-            setReadyForPainting();
-            setupWindowManagementInterface();
-        }
-    }
-    Toplevel::addDamage(damage);
-}
-
 bool X11Client::belongsToSameApplication(const AbstractClient *other, SameApplicationChecks checks) const
 {
     const X11Client *c2 = dynamic_cast<const X11Client *>(other);
@@ -4192,10 +4187,6 @@ void X11Client::setFrameGeometry(const QRect &rect, ForceGeometry_t force)
     screens()->setCurrent(this);
     workspace()->updateStackingOrder();
 
-    // Need to regenerate decoration pixmaps when the buffer size is changed.
-    if (oldBufferGeometry.size() != m_bufferGeometry.size()) {
-        discardWindowPixmap();
-    }
     if (oldBufferGeometry != m_bufferGeometry) {
         emit bufferGeometryChanged(this, oldBufferGeometry);
     }
@@ -4259,9 +4250,6 @@ void X11Client::plainResize(int w, int h, ForceGeometry_t force)
     updateGeometryBeforeUpdateBlocking();
     screens()->setCurrent(this);
     workspace()->updateStackingOrder();
-    if (oldBufferGeometry.size() != m_bufferGeometry.size()) {
-        discardWindowPixmap();
-    }
     if (oldBufferGeometry != m_bufferGeometry) {
         emit bufferGeometryChanged(this, oldBufferGeometry);
     }
@@ -4893,6 +4881,8 @@ bool X11Client::supportsWindowRules() const
 
 void X11Client::damageNotifyEvent()
 {
+    Q_ASSERT(kwinApp()->operationMode() == Application::OperationModeX11);
+
     if (!readyForPainting()) { // avoid "setReadyForPainting()" function calling overhead
         if (m_syncRequest.counter == XCB_NONE) {  // cannot detect complete redraw, consider done now
             setReadyForPainting();
@@ -4900,7 +4890,10 @@ void X11Client::damageNotifyEvent()
         }
     }
 
-    AbstractClient::damageNotifyEvent();
+    SurfaceItemX11 *item = static_cast<SurfaceItemX11 *>(surfaceItem());
+    if (item) {
+        item->processDamage();
+    }
 }
 
 void X11Client::updateWindowPixmap()
