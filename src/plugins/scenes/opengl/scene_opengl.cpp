@@ -657,7 +657,7 @@ void SceneOpenGL::paint(int screenId, const QRegion &damage, const QList<Topleve
                     if (c->isOnScreen(screenId)) {
                         if (window->isOpaque() && c->isFullScreen()) {
                             SurfaceItem *topMost = findTopMostSurface(window->surfaceItem());
-                            if (!topMost) {
+                            if (!topMost || topMost->position() != QPoint(0, 0)) {
                                 continue;
                             }
                             auto pixmap = topMost->windowPixmap();
@@ -665,11 +665,7 @@ void SceneOpenGL::paint(int screenId, const QRegion &damage, const QList<Topleve
                                 break;
                             }
                             pixmap->update();
-                            // the subsurface has to be able to cover the whole window
-                            if (topMost->position() != QPoint(0, 0)) {
-                                break;
-                            }
-                            directScanout = m_backend->scanout(screenId, pixmap->surface());
+                            directScanout = m_backend->scanout(screenId, topMost);
                         }
                         break;
                     }
